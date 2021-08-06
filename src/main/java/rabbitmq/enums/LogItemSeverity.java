@@ -1,14 +1,13 @@
-package rabbitmq._4_routing;
+package rabbitmq.enums;
 
-import java.util.Random;
+import rabbitmq.util.MyRandomUtil;
 
 public enum LogItemSeverity {
     info, error, warning;
 
     public static String getRandom() {
         LogItemSeverity[] values = LogItemSeverity.values();
-        Random random = new Random();
-        int randomIndex = random.nextInt(values.length);
+        int randomIndex = MyRandomUtil.randomArrayElementIndex(values.length);
         return values[randomIndex].name();
     }
 }

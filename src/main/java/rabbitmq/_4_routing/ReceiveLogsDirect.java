@@ -1,12 +1,13 @@
 package rabbitmq._4_routing;
 
 import com.rabbitmq.client.*;
+import rabbitmq.enums.LogItemSeverity;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalTime;
 
 public class ReceiveLogsDirect {
-    private static final String EXCHANGE_NAME = "tut4.direct_logs";
+    private static final String EXCHANGE_NAME = EmitLogDirect.EXCHANGE_NAME;
 
     public static void main(String[] argv) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();

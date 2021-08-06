@@ -8,7 +8,7 @@ import com.rabbitmq.client.ConnectionFactory;
 import java.nio.charset.StandardCharsets;
 
 public class EmitLog {
-    public static final String EXCHANGE_NAME = "logs";
+    public static final String EXCHANGE_NAME = "tut3.logs";
 
     public static void main(String[] argv) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();

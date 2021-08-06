@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
  * and metric collection are largely omitted
  */
 public class ReceiveLogs {
-    public static final String EXCHANGE_NAME = "logs";
+    public static final String EXCHANGE_NAME = EmitLog.EXCHANGE_NAME;
 
     public static void main(String[] argv) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();

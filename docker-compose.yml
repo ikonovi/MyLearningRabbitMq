@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  rabbitmq:
+    hostname: rabbitmq-srv
+    image: "rabbitmq:3.8.19-management-alpine"
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    volumes:
+      - ./docker/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+    networks:
+      - rabbitmq_jdk
+
+  app:
+    hostname: jdk-srv
+    image: "openjdk:8"
+#    build:
+#      dockerfile: ./docker/jdk/Dockerfile
+#      context: .
+#    volumes:
+#      - ./target/MyLearningRabbitMq.jar:/tmp
+    command: java -version
+    networks:
+      - rabbitmq_jdk
+
+networks:
+  rabbitmq_jdk:
+    driver: bridge

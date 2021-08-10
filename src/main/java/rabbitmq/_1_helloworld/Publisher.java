@@ -19,6 +19,8 @@ public class Publisher {
 
     public void publish() {
         ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost("localhost");
+        factory.setPort(5672);
 
         try (Connection connection = factory.newConnection("publicher's connection");
                 Channel channel = connection.createChannel()) {

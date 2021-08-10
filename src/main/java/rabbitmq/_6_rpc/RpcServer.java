@@ -10,12 +10,14 @@ import java.nio.charset.StandardCharsets;
 /**
  * Consumer
  */
-public class RPCServer {
-    private static final Logger log = LoggerFactory.getLogger(RPCServer.class);
+public class RpcServer {
+    private static final Logger log = LoggerFactory.getLogger(RpcServer.class);
     public static final String RPC_QUEUE_NAME = "tut6.rpc_queue";
 
     public static void main(String[] argv) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost("localhost");
+        factory.setPort(5672); // not over SSL
 
         try (Connection connection = factory.newConnection();
                 Channel channel = connection.createChannel()) {

@@ -13,12 +13,14 @@ import java.util.concurrent.TimeoutException;
 
 public class RpcClient implements AutoCloseable {
     private static final Logger log = LoggerFactory.getLogger(RpcClient.class);
-    public static final String REQUEST_QUEUE_NAME = RPCServer.RPC_QUEUE_NAME;
+    public static final String REQUEST_QUEUE_NAME = RpcServer.RPC_QUEUE_NAME;
     private final Connection connection;
     private final Channel channel;
 
     public RpcClient() throws IOException, TimeoutException {
         ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost("localhost");
+        factory.setPort(5672); // not over SSL
         this.connection = factory.newConnection();
         this.channel = connection.createChannel();
     }
@@ -33,7 +35,7 @@ public class RpcClient implements AutoCloseable {
                 log.info(" [.] Got '{}'", response);
             }
         } catch (IOException | TimeoutException | InterruptedException e) {
-            Thread.currentThread().interrupt();
+            Thread.currentThread().interrupt(); // re-interrupted method
             e.printStackTrace();
         }
     }

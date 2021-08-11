@@ -18,8 +18,8 @@ services:
 #    build:
 #      dockerfile: ./docker/jdk/Dockerfile
 #      context: .
-#    volumes:
-#      - ./target/MyLearningRabbitMq.jar:/tmp
+    volumes:
+      - ./target/:/app
     command: java -version
     networks:
       - rabbitmq_jdk

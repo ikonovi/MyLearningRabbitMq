@@ -1,15 +1,12 @@
 package rabbitmq._7_publisher_confirms;
 
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.ConfirmCallback;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.*;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 
 public class PublisherConfirms {
@@ -99,28 +96,26 @@ public class PublisherConfirms {
 
             // ожидающие подтверждения - номер сообщения, текст
             ConcurrentNavigableMap<Long, String> outstandingConfirms = new ConcurrentSkipListMap<>();
-
             // очистить ожидающих подтверждения
-            ConfirmCallback cleanOutstandingConfirms = (long sequenceNumber, boolean multiple) -> {
+            ConfirmCallback cleanOutstandingConfirmCallback = (long sequenceNumber, boolean multiple) -> {
                 if (multiple) {
                     ConcurrentNavigableMap<Long, String> confirmed = outstandingConfirms.headMap(
                             sequenceNumber, true
                     );
-                    confirmed.clear();
+                    confirmed.clear(); // used fact that headMap is backed by original map. So, elements will be
+                    // removed from there as well.
                 } else {
                     outstandingConfirms.remove(sequenceNumber);
                 }
             };
-
-            ConfirmCallback  logError = (long sequenceNumber, boolean multiple) -> {
+            ConfirmCallback  logErrorConfirmCallback = (long sequenceNumber, boolean multiple) -> {
                 String body = outstandingConfirms.get(sequenceNumber);
                 System.err.format("Message with body %s has been nack-ed. Sequence number: %d, multiple: %b%n",
                         body, sequenceNumber, multiple
                 );
-                cleanOutstandingConfirms.handle(sequenceNumber, multiple);
+                cleanOutstandingConfirmCallback.handle(sequenceNumber, multiple);
             };
-
-            channel.addConfirmListener(cleanOutstandingConfirms,  logError);
+            channel.addConfirmListener(cleanOutstandingConfirmCallback,  logErrorConfirmCallback);
 
             long start = System.nanoTime();
             for (int i = 0; i < MESSAGE_COUNT; i++) {
@@ -130,7 +125,9 @@ public class PublisherConfirms {
                 channel.basicPublish("", queue, null, body.getBytes());
             }
 
-            if (!waitUntil(Duration.ofSeconds(60), () -> outstandingConfirms.isEmpty())) {
+            // Note, 2nd arg is the lambda expr that returns boolean value.
+            BooleanSupplier noMessageWaitingConfirms = outstandingConfirms::isEmpty;
+            if (!waitUntil(Duration.ofSeconds(60), noMessageWaitingConfirms) ) {
                 throw new IllegalStateException("All messages could not be confirmed in 60 seconds");
             }
 
@@ -142,10 +139,11 @@ public class PublisherConfirms {
     }
 
     static boolean waitUntil(Duration timeout, BooleanSupplier condition) throws InterruptedException {
-        int waited = 0;
-        while (!condition.getAsBoolean() && waited < timeout.toMillis()) {
-            Thread.sleep(100L);
-            waited = +100;
+        int waitedMillis = 0;
+        // Note, how to execute Supplier or get result of Supplier
+        while (!condition.getAsBoolean() && waitedMillis < timeout.toMillis()) {
+            TimeUnit.MILLISECONDS.sleep(100L);
+            waitedMillis = +100;
         }
         return condition.getAsBoolean();
     }
